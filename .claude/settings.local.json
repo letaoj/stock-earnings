@@ -5,7 +5,8 @@
       "Bash(npx create-vite:*)",
       "Bash(npm install)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nInitial project setup with React and TypeScript\n\n- Configure Vite build system with React and TypeScript\n- Set up testing infrastructure with Vitest\n- Add core dependencies: React, Recharts, date-fns, axios\n- Create basic app structure and styling\n- Configure environment variables for API keys\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial project setup with React and TypeScript\n\n- Configure Vite build system with React and TypeScript\n- Set up testing infrastructure with Vitest\n- Add core dependencies: React, Recharts, date-fns, axios\n- Create basic app structure and styling\n- Configure environment variables for API keys\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
