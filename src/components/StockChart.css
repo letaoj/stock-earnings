@@ -1,0 +1,16 @@
+.stock-chart {
+  width: 100%;
+  height: 200px;
+}
+
+.stock-chart.compact {
+  height: 60px;
+}
+
+.stock-chart .recharts-wrapper {
+  cursor: crosshair;
+}
+
+.stock-chart .recharts-tooltip-wrapper {
+  z-index: 100;
+}
