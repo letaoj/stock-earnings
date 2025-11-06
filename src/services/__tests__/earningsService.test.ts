@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { earningsService } from '../earningsService';
-import { EarningsCalendarEntry, Stock } from '../../types/stock';
 
 describe('EarningsService', () => {
   beforeEach(() => {

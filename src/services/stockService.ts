@@ -16,7 +16,7 @@ export class StockService {
    * Fetch historical price data for a stock
    */
   async getPriceHistory(
-    symbol: string,
+    _symbol: string,
     days: number = 30
   ): Promise<PriceData[]> {
     if (USE_MOCK_DATA) {
@@ -33,7 +33,7 @@ export class StockService {
   /**
    * Fetch current price for a stock
    */
-  async getCurrentPrice(symbol: string): Promise<StockPrice> {
+  async getCurrentPrice(_symbol: string): Promise<StockPrice> {
     if (USE_MOCK_DATA) {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 200));

@@ -157,7 +157,7 @@ export function StockModal({ stock, onClose }: StockModalProps) {
                       <p>{stock.earnings.summary.guidance}</p>
                     </div>
                   )}
-                </div>
+                </section>
               )}
             </>
           ) : (

@@ -8,7 +8,7 @@ export class EarningsService {
   /**
    * Fetch earnings calendar for a specific date
    */
-  async getEarningsCalendar(date: Date): Promise<EarningsCalendarEntry[]> {
+  async getEarningsCalendar(_date: Date): Promise<EarningsCalendarEntry[]> {
     if (USE_MOCK_DATA) {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
