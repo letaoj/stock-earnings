@@ -1,0 +1,246 @@
+.stock-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stock-card.clickable {
+  cursor: pointer;
+}
+
+.stock-card.clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.stock-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.stock-info .stock-symbol {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.stock-info .company-name {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.released {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.stock-card-body {
+  margin-bottom: 1rem;
+}
+
+.price-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.current-price {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.price-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.price-change {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-weight: 600;
+}
+
+.price-change.positive {
+  color: #10b981;
+}
+
+.price-change.negative {
+  color: #ef4444;
+}
+
+.price-change .percent {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.after-hours {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.after-hours .label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.after-hours .value {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.after-hours .change {
+  font-weight: 600;
+}
+
+.after-hours .change.positive {
+  color: #10b981;
+}
+
+.after-hours .change.negative {
+  color: #ef4444;
+}
+
+.chart-container {
+  margin: 1rem 0;
+}
+
+.earnings-info {
+  margin-top: 1rem;
+}
+
+.earnings-timing {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.earnings-timing .label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.earnings-timing .value {
+  font-weight: 600;
+  color: #1f2937;
+  padding: 0.125rem 0.5rem;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.earnings-timing .time {
+  color: #6b7280;
+}
+
+.estimates,
+.actuals {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.estimate-row,
+.actual-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.estimate-row:last-child,
+.actual-row:last-child {
+  margin-bottom: 0;
+}
+
+.estimate-row .label,
+.actual-row .label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.estimate-row .value,
+.actual-row .value {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.actual-row .estimate {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.beat-status {
+  padding: 0.5rem;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.beat-status.beat {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.beat-status.miss {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.beat-status.meet {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.stock-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.market-status {
+  text-transform: capitalize;
+  font-weight: 500;
+}
