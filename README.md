@@ -67,15 +67,19 @@ cd stock-earnings
 npm install
 ```
 
-3. Create environment configuration:
+3. Get a Financial Modeling Prep API key:
+   - Sign up at https://financialmodelingprep.com/developer/docs/
+   - Free tier: 250 requests/day
+   - Copy your API key
+
+4. Create environment configuration:
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-4. Update `.env` with your API keys:
+5. Update `.env.local` with your API key:
 ```env
-VITE_FINANCIAL_API_KEY=your_api_key_here
-VITE_FINANCIAL_API_BASE_URL=https://api.example.com
+FMP_API_KEY=your_actual_fmp_api_key_here
 ```
 
 ### Development
@@ -157,20 +161,38 @@ stock-earnings/
 
 ## API Integration
 
-The application is designed to work with financial data APIs. Currently, it uses mock data for development. To integrate with a real API:
+The application uses **Financial Modeling Prep (FMP)** API through secure Vercel serverless functions.
 
-1. Update `src/services/earningsService.ts` and `src/services/stockService.ts`
-2. Set `USE_MOCK_DATA = false` in both service files
-3. Implement the API calls using the `apiClient`
-4. Configure your API endpoints in `.env`
+### Architecture
 
-### Recommended APIs
+- **Frontend**: React app (runs in browser)
+- **Backend**: Vercel serverless functions (`/api` folder)
+- **API**: Financial Modeling Prep (accessed only from backend)
 
-- **Financial Modeling Prep**: Comprehensive financial data
-- **Alpha Vantage**: Free stock market APIs
-- **Polygon.io**: Real-time and historical market data
-- **Yahoo Finance API**: Stock prices and earnings data
-- **Earnings Whispers**: Earnings calendar and estimates
+This architecture ensures:
+- ✅ API keys are never exposed to the client
+- ✅ Rate limiting can be implemented server-side
+- ✅ Secure API access
+- ✅ Better caching control
+
+### API Endpoints
+
+The app uses these Vercel serverless functions:
+
+1. **`/api/earnings-calendar`** - Get earnings calendar for a date
+2. **`/api/stock-quote`** - Get current stock quote
+3. **`/api/stock-history`** - Get historical price data
+4. **`/api/batch-quotes`** - Get multiple stock quotes at once
+
+All endpoints automatically proxy requests to Financial Modeling Prep with your server-side API key.
+
+### Switching APIs
+
+To use a different financial API (Alpha Vantage, Polygon.io, etc.):
+
+1. Update the serverless functions in `/api` folder
+2. Modify the data transformation logic to match the new API's response format
+3. Update environment variables with new API credentials
 
 ## Testing
 
@@ -250,6 +272,123 @@ This project is licensed under the MIT License.
 - React and TypeScript communities
 - Recharts for excellent charting library
 - Vitest and Testing Library for testing tools
+
+## Deployment to Production
+
+### Deploy to Vercel (Recommended)
+
+Vercel is the easiest way to deploy this app since it has built-in support for Vite and serverless functions.
+
+#### Option 1: Deploy via CLI
+
+1. Install Vercel CLI:
+```bash
+npm install -g vercel
+```
+
+2. Login to Vercel:
+```bash
+vercel login
+```
+
+3. Deploy:
+```bash
+vercel --prod
+```
+
+4. Set environment variable:
+```bash
+vercel env add FMP_API_KEY
+```
+Enter your Financial Modeling Prep API key when prompted.
+
+5. Redeploy to apply environment variables:
+```bash
+vercel --prod
+```
+
+#### Option 2: Deploy via GitHub Integration
+
+1. Push your code to GitHub
+2. Go to https://vercel.com/new
+3. Import your GitHub repository
+4. Configure environment variables:
+   - Add `FMP_API_KEY` with your API key
+5. Click "Deploy"
+
+Vercel will automatically:
+- Build your React app
+- Deploy serverless functions from `/api` folder
+- Set up HTTPS and CDN
+- Provide a production URL
+
+#### Option 3: Deploy Button
+
+Click this button to deploy directly to Vercel:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=YOUR_REPO_URL&env=FMP_API_KEY)
+
+### Environment Variables for Production
+
+Set these in your Vercel project settings:
+
+| Variable | Description | Where to Get |
+|----------|-------------|--------------|
+| `FMP_API_KEY` | Financial Modeling Prep API key | https://financialmodelingprep.com/developer/docs/ |
+
+### Deploy to Other Platforms
+
+#### Netlify
+
+1. Install Netlify CLI: `npm install -g netlify-cli`
+2. Build: `npm run build`
+3. Deploy: `netlify deploy --prod`
+4. Set environment variables in Netlify dashboard
+5. Note: Modify `/api` functions to Netlify function format
+
+#### AWS Amplify
+
+1. Connect your GitHub repository
+2. Set build settings:
+   - Build command: `npm run build`
+   - Output directory: `dist`
+3. Set environment variables in Amplify console
+4. Note: Serverless functions require AWS Lambda setup
+
+#### Traditional Server (VPS)
+
+1. Clone repo on server: `git clone <your-repo>`
+2. Install dependencies: `npm install`
+3. Create `.env` with your API key
+4. Build: `npm run build`
+5. Serve with nginx or: `npx serve -s dist`
+6. Note: You'll need to set up a Node.js backend to handle `/api` routes
+
+### API Rate Limits
+
+**Financial Modeling Prep Free Tier:**
+- 250 API calls per day
+- Sufficient for ~25 users/day with typical usage
+
+**To increase limits:**
+- Starter: $15/month (750 calls/day)
+- Professional: $30/month (1,500 calls/day)
+- Enterprise: Custom pricing
+
+**Optimization tips:**
+- Cache API responses (already implemented with 1-5 minute cache)
+- Use batch endpoints when possible
+- Implement rate limiting per user
+
+### Production Checklist
+
+- [ ] Get FMP API key
+- [ ] Set environment variables in Vercel
+- [ ] Test deployment in preview environment
+- [ ] Monitor API usage at https://financialmodelingprep.com/developer/docs/dashboard
+- [ ] Set up custom domain (optional)
+- [ ] Configure analytics (optional)
+- [ ] Set up error monitoring (Sentry, LogRocket, etc.)
 
 ## Support
 

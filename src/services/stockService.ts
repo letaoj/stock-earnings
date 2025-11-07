@@ -1,8 +1,11 @@
 import { PriceData, StockPrice, MarketStatus } from '../types/stock';
 import { getCurrentMarketStatus, generatePriceHistory } from './mockData';
+import { apiClient } from './apiClient';
 
-// Use mock data flag - set to false when real API is available
-const USE_MOCK_DATA = true;
+// Use mock data flag - configurable via environment variable
+// In production with API key: false
+// In development/testing without API: true
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
 
 export class StockService {
   /**
@@ -16,7 +19,7 @@ export class StockService {
    * Fetch historical price data for a stock
    */
   async getPriceHistory(
-    _symbol: string,
+    symbol: string,
     days: number = 30
   ): Promise<PriceData[]> {
     if (USE_MOCK_DATA) {
@@ -25,15 +28,32 @@ export class StockService {
       return generatePriceHistory(100, days);
     }
 
-    // TODO: Replace with real API call
-    // Example: const response = await apiClient.get<PriceData[]>(`/stocks/${symbol}/history?days=${days}`);
-    throw new Error('Real API not implemented yet');
+    try {
+      const data = await apiClient.get<any>(`/stock-history?symbol=${symbol}&days=${days}`);
+
+      // FMP returns data in { historical: [...] } format
+      const historical = data.historical || [];
+
+      // Transform to our PriceData format
+      return historical.map((item: any) => ({
+        date: item.date,
+        close: item.close,
+        high: item.high,
+        low: item.low,
+        open: item.open,
+        volume: item.volume,
+      })).reverse(); // FMP returns newest first, we want oldest first
+    } catch (error) {
+      console.error(`Failed to fetch price history for ${symbol}:`, error);
+      // Fallback to mock data on error
+      return generatePriceHistory(100, days);
+    }
   }
 
   /**
    * Fetch current price for a stock
    */
-  async getCurrentPrice(_symbol: string): Promise<StockPrice> {
+  async getCurrentPrice(symbol: string): Promise<StockPrice> {
     if (USE_MOCK_DATA) {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -58,9 +78,33 @@ export class StockService {
       };
     }
 
-    // TODO: Replace with real API call
-    // Example: const response = await apiClient.get<StockPrice>(`/stocks/${symbol}/price`);
-    throw new Error('Real API not implemented yet');
+    try {
+      const data = await apiClient.get<any[]>(`/stock-quote?symbol=${symbol}`);
+
+      if (!data || data.length === 0) {
+        throw new Error(`No price data for ${symbol}`);
+      }
+
+      const quote = data[0];
+      const marketStatus = this.getMarketStatus();
+
+      return {
+        current: quote.price,
+        change: quote.change,
+        changePercent: quote.changesPercentage,
+        afterHours:
+          (marketStatus === 'after-hours' && quote.afterHoursPrice)
+            ? {
+                price: quote.afterHoursPrice,
+                change: quote.afterHoursChange || 0,
+                changePercent: quote.afterHoursChangePercentage || 0,
+              }
+            : undefined,
+      };
+    } catch (error) {
+      console.error(`Failed to fetch current price for ${symbol}:`, error);
+      throw error;
+    }
   }
 
   /**

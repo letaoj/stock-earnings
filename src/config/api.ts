@@ -1,6 +1,7 @@
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_FINANCIAL_API_BASE_URL || 'https://api.example.com',
-  apiKey: import.meta.env.VITE_FINANCIAL_API_KEY || '',
+  // Use relative path for API routes (works in both dev and production with Vercel)
+  baseURL: '/api',
+  apiKey: '', // API key is handled server-side in Vercel functions
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,
