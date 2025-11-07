@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/USERNAME/stock-earnings/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📚 Documentation
+    url: https://github.com/USERNAME/stock-earnings/blob/main/README.md
+    about: Read the documentation and guides
+  - name: 🆘 Support
+    url: https://github.com/USERNAME/stock-earnings/discussions/categories/q-a
+    about: Get help with using the application

@@ -11,7 +11,8 @@
       "Bash(npm test:*)",
       "Bash(npm run build)",
       "Bash(timeout 10 npm run dev:*)",
-      "Bash(npm outdated)"
+      "Bash(npm outdated)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

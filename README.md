@@ -2,7 +2,14 @@
 
 A modern web application for tracking and displaying daily earnings reports from publicly traded companies, providing users with quick visual insights into stock performance trends.
 
-![Stock Earnings Tracker](https://img.shields.io/badge/React-18.2-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue) ![Tests](https://img.shields.io/badge/tests-83%20passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-green)
+[![CI](https://github.com/USERNAME/stock-earnings/workflows/CI/badge.svg)](https://github.com/USERNAME/stock-earnings/actions)
+[![Deploy](https://github.com/USERNAME/stock-earnings/workflows/Deploy%20to%20Vercel/badge.svg)](https://github.com/USERNAME/stock-earnings/actions)
+![React](https://img.shields.io/badge/React-18.3-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
+![Tests](https://img.shields.io/badge/tests-83%20passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+> **Note:** Replace `USERNAME` in the badge URLs with your GitHub username.
 
 ## Features
 
@@ -255,13 +262,24 @@ npm run test:coverage
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome! Please read our [Contributing Guide](.github/CONTRIBUTING.md) for details on:
+
+- Development setup
+- Code style guidelines
+- Testing requirements
+- Pull request process
+
+Quick start:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes and add tests
+4. Run `npm test` and `npm run lint`
+5. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+For more details, see [CONTRIBUTING.md](.github/CONTRIBUTING.md)
 
 ## License
 
