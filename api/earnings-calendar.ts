@@ -13,9 +13,9 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.FMP_API_KEY;
+  const apiKey = process.env.FINNHUB_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured' });
+    return res.status(500).json({ error: 'Finnhub API key not configured' });
   }
 
   try {
@@ -25,13 +25,14 @@ export default async function handler(
       return res.status(400).json({ error: 'Date parameter required' });
     }
 
-    // Financial Modeling Prep API endpoint
-    const url = `https://financialmodelingprep.com/api/v3/earnings-calendar?from=${date}&to=${date}&apikey=${apiKey}`;
+    // Finnhub Earnings Calendar API
+    // https://finnhub.io/docs/api/earnings-calendar
+    const url = `https://finnhub.io/api/v1/calendar/earnings?from=${date}&to=${date}&token=${apiKey}`;
 
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`FMP API error: ${response.status}`);
+      throw new Error(`Finnhub API error: ${response.status}`);
     }
 
     const data = await response.json();

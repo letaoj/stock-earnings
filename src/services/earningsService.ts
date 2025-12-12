@@ -20,21 +20,28 @@ export class EarningsService {
 
     try {
       const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const data = await apiClient.get<any[]>(`/earnings-calendar?date=${dateStr}`);
+      const response = await apiClient.get<any>(`/earnings-calendar?date=${dateStr}`);
 
-      // Guard clause for non-array responses (e.g. API error messages handled as 200 OK)
-      if (!Array.isArray(data)) {
-        console.warn('Expected array from earnings API but got:', data);
+      // Finnhub returns { earningsCalendar: [...] }
+      const calendarData = response.earningsCalendar;
+
+      // Guard clause for invalid data
+      if (!Array.isArray(calendarData)) {
+        console.warn('Expected earningsCalendar array from API but got:', response);
         return [];
       }
 
-      // Transform FMP API response to our EarningsCalendarEntry format
-      return data.map(item => ({
+      // Transform Finnhub API response to our EarningsCalendarEntry format
+      return calendarData.map((item: any) => ({
         symbol: item.symbol,
-        companyName: item.name || item.symbol,
-        timing: this.parseEarningsTime(item.time),
+        companyName: item.symbol, // Finnhub calendar doesn't provide name
+        timing: this.parseEarningsTime(item.hour),
         date: item.date || dateStr,
-        scheduledTime: item.time,
+        scheduledTime: item.hour,
+        epsEstimate: item.epsEstimate,
+        epsActual: item.epsActual,
+        revenueEstimate: item.revenueEstimate,
+        revenueActual: item.revenueActual,
       }));
     } catch (error) {
       console.error('Failed to fetch earnings calendar:', error);
