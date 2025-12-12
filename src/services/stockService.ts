@@ -31,10 +31,10 @@ export class StockService {
     try {
       const data = await apiClient.get<any>(`/stock-history?symbol=${symbol}&days=${days}`);
 
-      // FMP returns data in { historical: [...] } format
+      // Finnhub (via our proxy) returns data in { historical: [...] } format
       const historical = data.historical || [];
 
-      // Transform to our PriceData format
+      // Transform Finnhub API response to our Stock format
       return historical.map((item: any) => ({
         date: item.date,
         close: item.close,
