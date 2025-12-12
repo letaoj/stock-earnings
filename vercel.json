@@ -28,8 +28,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "FMP_API_KEY": "@fmp_api_key"
-  }
+  ]
 }

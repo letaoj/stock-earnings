@@ -5,7 +5,7 @@ import { apiClient } from './apiClient';
 // Use mock data flag - configurable via environment variable
 // In production with API key: false
 // In development/testing without API: true
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false' || import.meta.env.MODE === 'test';
 
 export class StockService {
   /**
@@ -70,10 +70,10 @@ export class StockService {
         afterHours:
           marketStatus === 'after-hours'
             ? {
-                price: basePrice + change + (Math.random() - 0.5) * 5,
-                change: (Math.random() - 0.5) * 5,
-                changePercent: (((Math.random() - 0.5) * 5) / basePrice) * 100,
-              }
+              price: basePrice + change + (Math.random() - 0.5) * 5,
+              change: (Math.random() - 0.5) * 5,
+              changePercent: (((Math.random() - 0.5) * 5) / basePrice) * 100,
+            }
             : undefined,
       };
     }
@@ -81,7 +81,7 @@ export class StockService {
     try {
       const data = await apiClient.get<any[]>(`/stock-quote?symbol=${symbol}`);
 
-      if (!data || data.length === 0) {
+      if (!Array.isArray(data) || data.length === 0) {
         throw new Error(`No price data for ${symbol}`);
       }
 
@@ -95,10 +95,10 @@ export class StockService {
         afterHours:
           (marketStatus === 'after-hours' && quote.afterHoursPrice)
             ? {
-                price: quote.afterHoursPrice,
-                change: quote.afterHoursChange || 0,
-                changePercent: quote.afterHoursChangePercentage || 0,
-              }
+              price: quote.afterHoursPrice,
+              change: quote.afterHoursChange || 0,
+              changePercent: quote.afterHoursChangePercentage || 0,
+            }
             : undefined,
       };
     } catch (error) {

@@ -5,7 +5,7 @@ import { apiClient } from './apiClient';
 // Use mock data flag - configurable via environment variable
 // In production with API key: false
 // In development/testing without API: true
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false' || import.meta.env.MODE === 'test';
 
 export class EarningsService {
   /**
@@ -21,6 +21,12 @@ export class EarningsService {
     try {
       const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
       const data = await apiClient.get<any[]>(`/earnings-calendar?date=${dateStr}`);
+
+      // Guard clause for non-array responses (e.g. API error messages handled as 200 OK)
+      if (!Array.isArray(data)) {
+        console.warn('Expected array from earnings API but got:', data);
+        return [];
+      }
 
       // Transform FMP API response to our EarningsCalendarEntry format
       return data.map(item => ({
@@ -125,6 +131,11 @@ export class EarningsService {
     try {
       // Use batch endpoint for better performance
       const quoteData = await apiClient.post<any[]>('/batch-quotes', { symbols });
+
+      if (!Array.isArray(quoteData)) {
+        console.warn('Expected array from batch quotes API but got:', quoteData);
+        return [];
+      }
 
       // Transform FMP API response to our Stock format
       const stocks: Stock[] = quoteData.map(quote => ({

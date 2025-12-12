@@ -26,7 +26,7 @@ export default async function handler(
     }
 
     // Financial Modeling Prep API endpoint
-    const url = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${date}&to=${date}&apikey=${apiKey}`;
+    const url = `https://financialmodelingprep.com/api/v3/earnings-calendar?from=${date}&to=${date}&apikey=${apiKey}`;
 
     const response = await fetch(url);
 
