@@ -21,9 +21,6 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-      - name: Login npm
-        run: npm login
-
       - name: Install dependencies
         run: npm ci
 
