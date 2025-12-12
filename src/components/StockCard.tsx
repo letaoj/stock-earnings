@@ -116,8 +116,8 @@ export function StockCard({ stock, onClick }: StockCardProps) {
               {stock.earnings.estimate.revenue && (
                 <div className="estimate-row">
                   <span className="label">Est. Revenue:</span>
-                  <span className="value">
-                    {formatCurrency(stock.earnings.estimate.revenue)}
+                  <span className="estimate-text">
+                    (Est: {formatCurrency(stock.earnings.estimate.revenue || 0)})
                   </span>
                 </div>
               )}
@@ -140,10 +140,10 @@ export function StockCard({ stock, onClick }: StockCardProps) {
               </div>
               <div className="actual-row">
                 <span className="label">Revenue:</span>
-                <span className="value">{formatCurrency(stock.earnings.actual.revenue)}</span>
+                <span className="value">{formatCurrency(stock.earnings.actual.revenue || 0)}</span>
                 {stock.earnings.actual.revenueEstimate && (
                   <span className="estimate">
-                    (Est: {formatCurrency(stock.earnings.actual.revenueEstimate)})
+                    (Est: {formatCurrency(stock.earnings.actual.revenueEstimate || 0)})
                   </span>
                 )}
               </div>

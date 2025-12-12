@@ -150,8 +150,7 @@ describe('EarningsService', () => {
     it('should include both BMO and AMC earnings', async () => {
       const result = await earningsService.getEarningsForDate(new Date());
       const timings = result.map((s) => s.earnings.timing);
-      const hasBMO = timings.includes('BMO');
-      const hasAMC = timings.includes('AMC'); // Note: Mock data might randomly fail this if not guaranteed
+      // Note: Mock data might randomly fail this if not guaranteed
       expect(timings.length).toBeGreaterThan(0);
     });
   });

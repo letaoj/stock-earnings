@@ -1,4 +1,3 @@
-```typescript
 import { apiClient } from '../services/apiClient';
 
 // Store cached list in memory to avoid repeated fetches during session
@@ -10,8 +9,8 @@ export const fetchSP500List = async (): Promise<Set<string>> => {
   try {
     const symbols = await apiClient.get<string[]>('/sp500');
     if (Array.isArray(symbols)) {
-        cachedSP500 = new Set(symbols.map(s => s.toUpperCase()));
-        return cachedSP500;
+      cachedSP500 = new Set(symbols.map(s => s.toUpperCase()));
+      return cachedSP500;
     }
     return new Set();
   } catch (error) {
@@ -28,4 +27,3 @@ export const isSP500 = (symbol: string, sp500Set: Set<string>): boolean => {
   // Let's assume empty set means "unknown", so everything goes to "Other" or we disable splitting.
   // Better: returns false if set is empty.
 };
-```

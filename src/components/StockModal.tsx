@@ -47,31 +47,7 @@ export function StockModal({ stock, onClose }: StockModalProps) {
     return `${sign}${value.toFixed(2)}%`;
   };
 
-  const getBeatStatusClass = () => {
-    switch (stock.earnings.beatStatus) {
-      case 'beat':
-        return 'beat';
-      case 'miss':
-        return 'miss';
-      case 'meet':
-        return 'meet';
-      default:
-        return '';
-    }
-  };
 
-  const getBeatStatusText = () => {
-    switch (stock.earnings.beatStatus) {
-      case 'beat':
-        return 'Beat Estimates';
-      case 'miss':
-        return 'Missed Estimates';
-      case 'meet':
-        return 'Met Estimates';
-      default:
-        return 'Unknown';
-    }
-  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -181,10 +157,10 @@ export function StockModal({ stock, onClose }: StockModalProps) {
                   <div className="detail-row">
                     <span>Revenue:</span>
                     <span>
-                      {formatCurrency(stock.earnings.actual.revenue)}
+                      {formatCurrency(stock.earnings.actual.revenue || 0)}
                       {stock.earnings.actual.revenueEstimate && (
                         <span className="estimate-text">
-                          {' '}(Est: {formatCurrency(stock.earnings.actual.revenueEstimate)})
+                          {' '}(Est: {formatCurrency(stock.earnings.actual.revenueEstimate || 0)})
                         </span>
                       )}
                     </span>
@@ -248,7 +224,7 @@ export function StockModal({ stock, onClose }: StockModalProps) {
                   {stock.earnings.estimate.revenue && (
                     <div className="detail-row">
                       <span>Revenue Estimate:</span>
-                      <span>{formatCurrency(stock.earnings.estimate.revenue)}</span>
+                      <span>{formatCurrency(stock.earnings.estimate.revenue || 0)}</span>
                     </div>
                   )}
                 </div>
