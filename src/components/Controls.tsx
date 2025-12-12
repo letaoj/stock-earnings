@@ -8,6 +8,10 @@ interface ControlsProps {
   onSortChange: (sort: SortOption) => void;
   filterBy: FilterOption;
   onFilterChange: (filter: FilterOption) => void;
+  // Industry Filter Props
+  industries: string[];
+  selectedIndustry: string;
+  onIndustryChange: (industry: string) => void;
   onRefresh: () => void;
   isRefreshing: boolean;
 }
@@ -17,20 +21,41 @@ export function Controls({
   onSortChange,
   filterBy,
   onFilterChange,
+  industries,
+  selectedIndustry,
+  onIndustryChange,
   onRefresh,
   isRefreshing,
 }: ControlsProps) {
   return (
     <div className="controls">
+      {/* Industry Filter */}
       <div className="control-group">
-        <label htmlFor="filter-select">Filter:</label>
+        <label htmlFor="industry-select">Industry:</label>
+        <select
+          id="industry-select"
+          value={selectedIndustry}
+          onChange={(e) => onIndustryChange(e.target.value)}
+          className="control-select"
+        >
+          <option value="all">All Industries</option>
+          {industries.map((industry) => (
+            <option key={industry} value={industry}>
+              {industry}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="control-group">
+        <label htmlFor="filter-select">Status:</label>
         <select
           id="filter-select"
           value={filterBy}
           onChange={(e) => onFilterChange(e.target.value as FilterOption)}
           className="control-select"
         >
-          <option value="all">All Stocks</option>
+          <option value="all">All Statuses</option>
           <option value="BMO">Before Market Open</option>
           <option value="AMC">After Market Close</option>
           <option value="released">Released</option>
@@ -55,7 +80,7 @@ export function Controls({
 
       <button
         className={`refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
-        onClick={onRefresh}
+        onClick={onRefresh} // Ensure refresh is passed correctly
         disabled={isRefreshing}
         aria-label="Refresh data"
       >

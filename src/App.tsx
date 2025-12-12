@@ -3,13 +3,15 @@ import { Stock } from './types/stock';
 import { earningsService } from './services/earningsService';
 import { stockService } from './services/stockService';
 import { DateSelector } from './components/DateSelector';
+import { ErrorMessage } from './components/ErrorMessage';
 import { SearchBar } from './components/SearchBar';
 import { Controls, SortOption, FilterOption } from './components/Controls';
 import { StockCard } from './components/StockCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
-import { ErrorMessage } from './components/ErrorMessage';
+import { CompactStockList } from './components/CompactStockList';
 import { StockModal } from './components/StockModal';
 import { REFRESH_INTERVALS } from './config/api';
+import { fetchSP500List, isSP500 } from './config/sp500';
 import './App.css';
 
 function App() {
@@ -19,20 +21,31 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [sp500Set, setSp500Set] = useState<Set<string>>(new Set());
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('symbol');
   const [filterBy, setFilterBy] = useState<FilterOption>('all');
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
 
   // Modal state
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+
+  // Derived unique industries
+  const industries = Array.from(new Set(stocks.map(s => s.industry).filter(Boolean))) as string[];
+  industries.sort();
+
+  // Load S&P 500 list on mount
+  useEffect(() => {
+    fetchSP500List().then(setSp500Set);
+  }, []);
 
   // Fetch stocks data
   const fetchStocks = useCallback(async () => {
     try {
       setError(null);
-      const data = await earningsService.getTodayEarnings();
+      const data = await earningsService.getEarningsForDate(selectedDate);
       setStocks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch earnings data');
@@ -40,13 +53,13 @@ function App() {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [selectedDate]); // Add selectedDate dependency
 
   // Initial fetch
   useEffect(() => {
     setLoading(true);
     fetchStocks();
-  }, [fetchStocks, selectedDate]);
+  }, [fetchStocks]);
 
   // Auto-refresh based on market status
   useEffect(() => {
@@ -86,6 +99,11 @@ function App() {
       }
     }
 
+    // Apply industry filter
+    if (selectedIndustry !== 'all') {
+      result = result.filter(stock => stock.industry === selectedIndustry);
+    }
+
     // Apply sorting
     result.sort((a, b) => {
       switch (sortBy) {
@@ -103,7 +121,7 @@ function App() {
     });
 
     setFilteredStocks(result);
-  }, [stocks, searchQuery, sortBy, filterBy]);
+  }, [stocks, searchQuery, sortBy, filterBy, selectedIndustry]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -115,6 +133,10 @@ function App() {
     setError(null);
     fetchStocks();
   };
+
+  // Split stocks for display
+  const majorStocks = filteredStocks.filter(s => isSP500(s.symbol, sp500Set));
+  const minorStocks = filteredStocks.filter(s => !isSP500(s.symbol, sp500Set));
 
   return (
     <div className="app">
@@ -134,6 +156,9 @@ function App() {
               onSortChange={setSortBy}
               filterBy={filterBy}
               onFilterChange={setFilterBy}
+              industries={industries}
+              selectedIndustry={selectedIndustry}
+              onIndustryChange={setSelectedIndustry}
               onRefresh={handleRefresh}
               isRefreshing={isRefreshing}
             />
@@ -149,15 +174,38 @@ function App() {
             <p>No earnings reports found for the selected filters.</p>
           </div>
         ) : (
-          <div className="stocks-grid">
-            {filteredStocks.map((stock) => (
-              <StockCard
-                key={stock.symbol}
-                stock={stock}
-                onClick={() => setSelectedStock(stock)}
-              />
-            ))}
-          </div>
+          <>
+            {/* Major Stocks Section */}
+            {majorStocks.length > 0 && (
+              <section className="stock-section">
+                <h2 className="section-title">
+                  S&P 500 & Major Movers <span className="count-badge">{majorStocks.length}</span>
+                </h2>
+                <div className="stocks-grid">
+                  {majorStocks.map((stock) => (
+                    <StockCard
+                      key={stock.symbol}
+                      stock={stock}
+                      onClick={() => setSelectedStock(stock)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Other Stocks Section */}
+            {minorStocks.length > 0 && (
+              <section className="stock-section">
+                <h2 className="section-title">
+                  Other Reporting Companies <span className="count-badge">{minorStocks.length}</span>
+                </h2>
+                <CompactStockList
+                  stocks={minorStocks}
+                  onSelectStock={setSelectedStock}
+                />
+              </section>
+            )}
+          </>
         )}
       </main>
 

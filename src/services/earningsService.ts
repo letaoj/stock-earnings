@@ -175,12 +175,64 @@ export class EarningsService {
   }
 
   /**
-   * Fetch today's earnings with full stock data
+   * Fetch earnings with full stock data for a specific date
    */
-  async getTodayEarnings(): Promise<Stock[]> {
-    const calendar = await this.getEarningsCalendar(new Date());
+  async getEarningsForDate(date: Date = new Date()): Promise<Stock[]> {
+    const calendar = await this.getEarningsCalendar(date);
     const symbols = calendar.map(entry => entry.symbol);
-    return this.getMultipleStocksWithEarnings(symbols);
+
+    // Chunk symbols to avoid hitting backend limits (30) or rate limits
+    // Finnhub Free Tier is sensitive, so we use small chunks
+    const CHUNK_SIZE = 5;
+    const chunks = [];
+    for (let i = 0; i < symbols.length; i += CHUNK_SIZE) {
+      chunks.push(symbols.slice(i, i + CHUNK_SIZE));
+    }
+
+    const allStocks: Stock[] = [];
+
+    // Process chunks sequentially to be gentle on rate limits
+    for (const chunk of chunks) {
+      try {
+        const stocks = await this.getMultipleStocksWithEarnings(chunk);
+
+        // Merge earnings data from calendar (estimate, timing) into the stock objects
+        const enrichedStocks = stocks.map(stock => {
+          const calendarEntry = calendar.find(c => c.symbol === stock.symbol);
+          if (calendarEntry) {
+            return {
+              ...stock,
+              earnings: {
+                ...stock.earnings,
+                timing: calendarEntry.timing,
+                scheduledTime: calendarEntry.scheduledTime,
+                estimate: calendarEntry.epsEstimate ? {
+                  eps: calendarEntry.epsEstimate,
+                  revenue: calendarEntry.revenueEstimate
+                } : undefined,
+                actual: calendarEntry.epsActual ? {
+                  eps: calendarEntry.epsActual,
+                  revenue: calendarEntry.revenueActual
+                } : undefined
+              }
+            };
+          }
+          return stock;
+        });
+
+        allStocks.push(...enrichedStocks);
+
+        // Small delay between chunks
+        if (chunks.length > 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (err) {
+        console.warn('Failed to fetch chunk:', chunk, err);
+        // Continue with other chunks
+      }
+    }
+
+    return allStocks;
   }
 }
 

@@ -11,6 +11,9 @@ describe('Controls', () => {
     onFilterChange: vi.fn(),
     onRefresh: vi.fn(),
     isRefreshing: false,
+    industries: ['Technology', 'Finance'],
+    selectedIndustry: 'all',
+    onIndustryChange: vi.fn(),
   };
 
   beforeEach(() => {

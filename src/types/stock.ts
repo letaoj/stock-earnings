@@ -31,7 +31,7 @@ export interface EarningsEstimate {
 
 export interface EarningsActual {
   eps: number;
-  revenue: number;
+  revenue?: number;
   epsEstimate?: number;
   revenueEstimate?: number;
 }
@@ -60,6 +60,7 @@ export interface EarningsReport {
 export interface Stock {
   symbol: string;
   companyName: string;
+  industry?: string;
   price: StockPrice;
   marketStatus: MarketStatus;
   earnings: EarningsReport;
@@ -74,4 +75,8 @@ export interface EarningsCalendarEntry {
   timing: EarningsTiming;
   scheduledTime?: string;
   estimate?: EarningsEstimate;
+  epsEstimate?: number;
+  revenueEstimate?: number;
+  epsActual?: number;
+  revenueActual?: number;
 }

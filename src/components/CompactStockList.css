@@ -1,0 +1,123 @@
+.compact-list-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.compact-stock-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.compact-stock-table th {
+    text-align: left;
+    padding: 1rem;
+    background: #f9fafb;
+    color: #6b7280;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.compact-stock-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #1f2937;
+}
+
+.stock-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.stock-row:hover {
+    background-color: #f9fafb;
+}
+
+.stock-row:last-child td {
+    border-bottom: none;
+}
+
+.col-symbol {
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.col-company {
+    max-width: 200px;
+}
+
+.company-text {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.industry-text {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.timing-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.timing-badge.BMO {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.timing-badge.AMC {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+.eps-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.eps-cell.beat .actual {
+    color: #059669;
+    font-weight: 700;
+}
+
+.eps-cell.miss .actual {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.estimate {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.price-cell {
+    text-align: right;
+    font-weight: 500;
+}
+
+.price-cell.positive {
+    color: #059669;
+}
+
+.price-cell.negative {
+    color: #dc2626;
+}
+
+.price-change {
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none;
+    }
+}

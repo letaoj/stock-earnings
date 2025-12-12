@@ -58,6 +58,7 @@ export function StockCard({ stock, onClick }: StockCardProps) {
         <div className="stock-info">
           <div className="stock-symbol">{stock.symbol}</div>
           <div className="company-name">{stock.companyName}</div>
+          <div className="stock-industry">{stock.industry || 'Unknown Industry'}</div>
         </div>
         <div className={`earnings-status ${earningsReleased ? 'released' : 'pending'}`}>
           {earningsReleased ? (
@@ -85,9 +86,8 @@ export function StockCard({ stock, onClick }: StockCardProps) {
             <span className="label">After Hours:</span>
             <span className="value">{formatCurrency(stock.price.afterHours.price)}</span>
             <span
-              className={`change ${
-                stock.price.afterHours.change >= 0 ? 'positive' : 'negative'
-              }`}
+              className={`change ${stock.price.afterHours.change >= 0 ? 'positive' : 'negative'
+                }`}
             >
               {formatPercent(stock.price.afterHours.changePercent)}
             </span>

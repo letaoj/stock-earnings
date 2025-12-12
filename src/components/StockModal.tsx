@@ -1,5 +1,7 @@
-import { Stock } from '../types/stock';
+import { useState, useEffect } from 'react';
+import { Stock, PriceData } from '../types/stock';
 import { StockChart } from './StockChart';
+import { stockService } from '../services/stockService';
 import './StockModal.css';
 
 interface StockModalProps {
@@ -8,8 +10,28 @@ interface StockModalProps {
 }
 
 export function StockModal({ stock, onClose }: StockModalProps) {
+  const [priceHistory, setPriceHistory] = useState<PriceData[]>(stock.priceHistory || []);
+  const [range, setRange] = useState<'30' | '90' | '365'>('30');
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   const isPositive = stock.price.change >= 0;
   const earningsReleased = stock.earnings.status === 'released';
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoadingHistory(true);
+      try {
+        const history = await stockService.getPriceHistory(stock.symbol, parseInt(range));
+        setPriceHistory(history);
+      } catch (err) {
+        console.error('Failed to fetch history:', err);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    fetchHistory();
+  }, [stock.symbol, range]);
 
   const formatCurrency = (value: number) => {
     if (value >= 1e9) {
@@ -23,6 +45,32 @@ export function StockModal({ stock, onClose }: StockModalProps) {
   const formatPercent = (value: number) => {
     const sign = value >= 0 ? '+' : '';
     return `${sign}${value.toFixed(2)}%`;
+  };
+
+  const getBeatStatusClass = () => {
+    switch (stock.earnings.beatStatus) {
+      case 'beat':
+        return 'beat';
+      case 'miss':
+        return 'miss';
+      case 'meet':
+        return 'meet';
+      default:
+        return '';
+    }
+  };
+
+  const getBeatStatusText = () => {
+    switch (stock.earnings.beatStatus) {
+      case 'beat':
+        return 'Beat Estimates';
+      case 'miss':
+        return 'Missed Estimates';
+      case 'meet':
+        return 'Met Estimates';
+      default:
+        return 'Unknown';
+    }
   };
 
   return (
@@ -47,9 +95,35 @@ export function StockModal({ stock, onClose }: StockModalProps) {
 
         <div className="modal-body">
           <section className="modal-section">
-            <h3>Price History (30 Days)</h3>
+            <div className="chart-header">
+              <h3>Price History</h3>
+              <div className="range-selector">
+                <button
+                  className={range === '30' ? 'active' : ''}
+                  onClick={() => setRange('30')}
+                >
+                  1M
+                </button>
+                <button
+                  className={range === '90' ? 'active' : ''}
+                  onClick={() => setRange('90')}
+                >
+                  3M
+                </button>
+                <button
+                  className={range === '365' ? 'active' : ''}
+                  onClick={() => setRange('365')}
+                >
+                  1Y
+                </button>
+              </div>
+            </div>
             <div className="modal-chart">
-              <StockChart data={stock.priceHistory} isPositive={isPositive} showAxis />
+              {loadingHistory ? (
+                <div className="chart-loading">Loading chart data...</div>
+              ) : (
+                <StockChart data={priceHistory} isPositive={isPositive} showAxis />
+              )}
             </div>
           </section>
 

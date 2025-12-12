@@ -32,20 +32,26 @@ export default async function handler(
 
     // Finnhub doesn't have a batch endpoint in the free tier
     // We must make parallel requests for each symbol
-    // Note: This consumes rate limit quickly (1 call per symbol)
     const promises = symbols.map(async (symbol) => {
       try {
-        const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`;
-        const response = await fetch(url);
+        const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`;
+        const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${apiKey}`;
 
-        if (!response.ok) return null;
+        const [quoteRes, profileRes] = await Promise.all([
+          fetch(quoteUrl),
+          fetch(profileUrl)
+        ]);
 
-        const data = await response.json();
+        if (!quoteRes.ok) return null;
 
-        // Return structured object matching FMP format
+        const data = await quoteRes.json();
+        const profile = await profileRes.json().catch(() => ({})); // Handle profile failure gracefully
+
+        // Return structured object matching FMP format + industry
         return {
           symbol: symbol.toUpperCase(),
-          name: symbol.toUpperCase(), // Profile call skipped to save quota; name fallback to symbol
+          name: profile.name || symbol.toUpperCase(),
+          industry: profile.finnhubIndustry || 'Unknown',
           price: data.c,
           changesPercentage: data.dp,
           change: data.d,
@@ -60,11 +66,11 @@ export default async function handler(
           eps: null,
           pe: null,
           earningsAnnouncement: null,
-          sharesOutstanding: null,
+          sharesOutstanding: profile.shareOutstanding ? profile.shareOutstanding * 1000000 : null,
           timestamp: data.t,
         };
       } catch (err) {
-        console.error(`Failed to fetch quote for ${symbol}`, err);
+        console.error(`Failed to fetch data for ${symbol}`, err);
         return null; // Ignore failed symbols
       }
     });
