@@ -68,6 +68,14 @@ export interface Stock {
   lastUpdated: string;
 }
 
+export interface EarningsAnalysis {
+  summary: string;
+  sentiment: 'positive' | 'negative' | 'neutral';
+  keyTakeaways: string[];
+  reportUrl?: string;
+  quarter?: string;
+}
+
 export interface EarningsCalendarEntry {
   date: string;
   symbol: string;

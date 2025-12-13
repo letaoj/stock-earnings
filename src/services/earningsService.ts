@@ -242,6 +242,34 @@ export class EarningsService {
 
     return allStocks;
   }
+
+  /**
+   * Fetch AI-generated earnings analysis for a stock
+   */
+  async getEarningsAnalysis(symbol: string): Promise<any> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      return {
+        summary: `Mock AI Analysis for ${symbol}: Strong revenue growth driven by cloud segment. Margins expanded due to cost cutting efficiency. Guidance raised for full year.`,
+        sentiment: 'positive',
+        keyTakeaways: [
+          'Revenue beat estimates by 5%',
+          'Cloud growth accelerated to 25% YoY',
+          'Operating margin improved 200bps'
+        ],
+        reportUrl: 'https://example.com/mock-report',
+        quarter: 'Q4 2024'
+      };
+    }
+
+    try {
+      const result = await apiClient.post<any>('/analyze-earnings', { symbol });
+      return result;
+    } catch (error) {
+      console.error(`Failed to analyze earnings for ${symbol}:`, error);
+      throw error;
+    }
+  }
 }
 
 export const earningsService = new EarningsService();

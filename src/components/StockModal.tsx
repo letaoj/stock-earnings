@@ -51,6 +51,38 @@ export function StockModal({ stock, onClose }: StockModalProps) {
 
 
 
+  const [analysis, setAnalysis] = useState<any | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Only fetch analysis if earnings are released
+    if (earningsReleased && !analysis) {
+      const fetchAnalysis = async () => {
+        setAnalyzing(true);
+        try {
+          // This call triggers the backend to search, download, and analyze
+          const result = await import('../services/earningsService').then(m => m.earningsService.getEarningsAnalysis(stock.symbol));
+          setAnalysis(result);
+        } catch (err) {
+          console.error('Analysis failed:', err);
+          setAnalysisError('Detailed analysis unavailable.');
+        } finally {
+          setAnalyzing(false);
+        }
+      };
+
+      fetchAnalysis();
+    }
+  }, [stock.symbol, earningsReleased, analysis]);
+
+  // UI Helper for Sentiment
+  const getSentimentColor = (sentiment: string) => {
+    if (sentiment === 'positive') return '#4ade80';
+    if (sentiment === 'negative') return '#f87171';
+    return '#9ca3af';
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -72,6 +104,64 @@ export function StockModal({ stock, onClose }: StockModalProps) {
         </div>
 
         <div className="modal-body">
+          {/* AI Analysis Section - Top Priority if available */}
+          {earningsReleased && (
+            <section className="modal-section ai-analysis-section" style={{ borderLeft: '3px solid #60a5fa', background: 'rgba(96, 165, 250, 0.05)' }}>
+              <div className="chart-header" style={{ marginBottom: '1rem' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#60a5fa', margin: 0 }}>
+                  🤖 AI Earnings Analysis
+                  {analyzing && <span className="spinner-small" style={{ fontSize: '0.8rem' }}>Analyzing...</span>}
+                </h3>
+                {analysis && (
+                  <span className="sentiment-badge" style={{
+                    background: getSentimentColor(analysis.sentiment),
+                    color: '#000',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    textTransform: 'capitalize'
+                  }}>
+                    {analysis.sentiment}
+                  </span>
+                )}
+              </div>
+
+              {analyzing ? (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>
+                  Reading report and generating summary...
+                </div>
+              ) : analysis ? (
+                <div className="analysis-content">
+                  <p style={{ lineHeight: '1.6', marginBottom: '1rem' }}>{analysis.summary}</p>
+
+                  {analysis.keyTakeaways && (
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '6px' }}>
+                      <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', opacity: 0.9 }}>Key Takeaways</h4>
+                      <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                        {analysis.keyTakeaways.map((point: string, i: number) => (
+                          <li key={i} style={{ marginBottom: '0.3rem' }}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {analysis.reportUrl && (
+                    <div style={{ marginTop: '0.8rem', fontSize: '0.8rem' }}>
+                      <a href={analysis.reportUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#60a5fa' }}>
+                        View Full Report ({analysis.quarter}) →
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ) : analysisError ? (
+                <div style={{ color: '#f87171', fontSize: '0.9rem' }}>
+                  ⚠️ {analysisError}
+                </div>
+              ) : null}
+            </section>
+          )}
+
           <section className="modal-section">
             <div className="chart-header">
               <h3>Price History</h3>
@@ -179,38 +269,6 @@ export function StockModal({ stock, onClose }: StockModalProps) {
                   )}
                 </div>
               </section>
-
-              {stock.earnings.summary && (
-                <section className="modal-section">
-                  <h3>Earnings Summary</h3>
-                  {stock.earnings.summary.keyMetrics && stock.earnings.summary.keyMetrics.length > 0 && (
-                    <div className="summary-subsection">
-                      <h4>Key Metrics</h4>
-                      <ul>
-                        {stock.earnings.summary.keyMetrics.map((metric, i) => (
-                          <li key={i}>{metric}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {stock.earnings.summary.highlights && stock.earnings.summary.highlights.length > 0 && (
-                    <div className="summary-subsection">
-                      <h4>Highlights</h4>
-                      <ul>
-                        {stock.earnings.summary.highlights.map((highlight, i) => (
-                          <li key={i}>{highlight}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {stock.earnings.summary.guidance && (
-                    <div className="summary-subsection">
-                      <h4>Guidance</h4>
-                      <p>{stock.earnings.summary.guidance}</p>
-                    </div>
-                  )}
-                </section>
-              )}
             </>
           ) : (
             stock.earnings.estimate && (
