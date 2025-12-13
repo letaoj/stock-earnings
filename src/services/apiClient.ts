@@ -1,67 +1,77 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import { API_CONFIG } from '../config/api';
 
 class APIClient {
-  private client: AxiosInstance;
+  private baseURL: string;
 
   constructor() {
-    this.client = axios.create({
-      baseURL: API_CONFIG.baseURL,
-      timeout: API_CONFIG.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    this.baseURL = API_CONFIG.baseURL;
+  }
 
-    // Request interceptor to add API key
-    this.client.interceptors.request.use(
-      (config) => {
-        if (API_CONFIG.apiKey) {
-          config.headers['X-API-Key'] = API_CONFIG.apiKey;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
+  private async request<T>(endpoint: string, options: RequestInit = {}, retries = 0): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
 
-    // Response interceptor for error handling
-    this.client.interceptors.response.use(
-      (response) => response,
-      async (error: AxiosError) => {
-        const config = error.config as AxiosRequestConfig & { _retry?: number };
+    // Default headers
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers as any,
+    };
 
-        if (!config) {
-          return Promise.reject(error);
-        }
+    // Add API Key if configured (currently handled server-side, but keeping logic)
+    if (API_CONFIG.apiKey) {
+      (headers as any)['X-API-Key'] = API_CONFIG.apiKey;
+    }
 
-        // Retry logic for network errors or 5xx errors
-        if (
-          (!error.response || (error.response.status >= 500 && error.response.status < 600)) &&
-          (config._retry || 0) < API_CONFIG.retryAttempts
-        ) {
-          config._retry = (config._retry || 0) + 1;
+    const config: RequestInit = {
+      ...options,
+      headers,
+    };
 
-          // Wait before retrying
-          await new Promise(resolve =>
-            setTimeout(resolve, API_CONFIG.retryDelay * config._retry!)
-          );
+    try {
+      const response = await fetch(url, config);
 
-          return this.client.request(config);
+      if (!response.ok) {
+        // Handle Retry Logic for 5xx errors
+        if (response.status >= 500 && response.status < 600 && retries < API_CONFIG.retryAttempts) {
+          await new Promise(resolve => setTimeout(resolve, API_CONFIG.retryDelay * (retries + 1)));
+          return this.request<T>(endpoint, options, retries + 1);
         }
 
-        return Promise.reject(error);
+        // Create enhanced error object
+        const errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        throw error;
       }
-    );
+
+      // Check for 204 No Content
+      if (response.status === 204) {
+        return {} as T;
+      }
+
+      return response.json();
+    } catch (error) {
+      // Handle Network Errors (fetch throws on network error) -> Retry
+      if (retries < API_CONFIG.retryAttempts) {
+        // Retry on network failure
+        await new Promise(resolve => setTimeout(resolve, API_CONFIG.retryDelay * (retries + 1)));
+        return this.request<T>(endpoint, options, retries + 1);
+      }
+
+      console.error(`API request failed: ${endpoint}`, error);
+      throw error;
+    }
   }
 
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.get<T>(url, config);
-    return response.data;
+  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
-  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.post<T>(url, data, config);
-    return response.data;
+  async post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 }
 

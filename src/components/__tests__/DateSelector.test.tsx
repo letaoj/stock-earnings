@@ -78,17 +78,26 @@ describe('DateSelector', () => {
     expect(calledDate.toDateString()).toBe(today.toDateString());
   });
 
-  it('should disable next button for future dates', () => {
+  it('should enable next button for near future dates', () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     renderWithProviders(<DateSelector selectedDate={tomorrow} onDateChange={mockOnDateChange} />);
+
+    const nextButton = screen.getByLabelText('Next day');
+    expect(nextButton).not.toBeDisabled();
+  });
+
+  it('should disable next button for result > 1 year in future', () => {
+    const farFuture = new Date();
+    farFuture.setFullYear(farFuture.getFullYear() + 2); // 2 years future
+    renderWithProviders(<DateSelector selectedDate={farFuture} onDateChange={mockOnDateChange} />);
 
     const nextButton = screen.getByLabelText('Next day');
     expect(nextButton).toBeDisabled();
   });
 
   it('should not disable next button for past dates', () => {
-    render(<DateSelector selectedDate={mockDate} onDateChange={mockOnDateChange} />);
+    renderWithProviders(<DateSelector selectedDate={mockDate} onDateChange={mockOnDateChange} />);
 
     const nextButton = screen.getByLabelText('Next day');
     expect(nextButton).not.toBeDisabled();

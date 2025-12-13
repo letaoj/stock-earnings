@@ -226,6 +226,17 @@ function AppContent() {
       {showSettings && (
         <SettingsModal onClose={() => setShowSettings(false)} />
       )}
+      <footer className="app-footer">
+        <div className="glossary">
+          <p><strong>Timing Legend:</strong></p>
+          <ul>
+            <li><strong>BMO:</strong> Before Market Open</li>
+            <li><strong>AMC:</strong> After Market Close</li>
+            <li><strong>DMH:</strong> During Market Hours</li>
+          </ul>
+        </div>
+        <p className="copyright">© {new Date().getFullYear()} Stock Earnings Tracker. Data provided by Finnhub.</p>
+      </footer>
     </div>
   );
 }

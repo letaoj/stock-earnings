@@ -29,20 +29,65 @@
 }
 
 .settings-btn {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.875rem;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
   transition: all 0.2s;
 }
 
 .settings-btn:hover {
-  background-color: var(--bg-color);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  border-color: var(--primary-color);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.app-footer {
+  margin-top: auto;
+  padding: 2rem 1rem;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.glossary {
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.glossary p {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.glossary ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.glossary li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.glossary strong {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  opacity: 0.7;
 }
 
 .subtitle {
