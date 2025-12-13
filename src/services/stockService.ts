@@ -44,7 +44,12 @@ export class StockService {
         volume: item.volume,
       })).reverse(); // FMP returns newest first, we want oldest first
     } catch (error) {
-      console.error(`Failed to fetch price history for ${symbol}:`, error);
+      // Suppress logging for known 403 Access Denied (likely Free Tier limit)
+      if ((error as any).status === 403 || (error as any).message?.includes('403')) {
+        console.warn(`Access denied for price history (${symbol}). Using mock fallback.`);
+      } else {
+        console.error(`Failed to fetch price history for ${symbol}:`, error);
+      }
       // Fallback to mock data on error
       return generatePriceHistory(100, days);
     }

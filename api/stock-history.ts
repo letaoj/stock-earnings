@@ -37,7 +37,12 @@ export default async function handler(
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Finnhub Candles API error: ${response.status}`);
+      if (response.status === 403) {
+        console.warn(`Finnhub 403 (Access Denied) for symbol: ${symbol}. Returning empty history.`);
+        return res.status(403).json({ error: 'Access Denied' });
+      }
+      const errorText = await response.text();
+      throw new Error(`Finnhub Candles API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
