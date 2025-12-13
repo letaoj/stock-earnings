@@ -192,12 +192,13 @@ function AppContent() {
                   S&P 500 & Major Movers <span className="count-badge">{majorStocks.length}</span>
                 </h2>
                 <div className="stocks-grid">
-                  {majorStocks.map((stock) => (
-                    <StockCard
-                      key={stock.symbol}
-                      stock={stock}
-                      onClick={() => setSelectedStock(stock)}
-                    />
+                  {majorStocks.map((stock, index) => (
+                    <div key={stock.symbol} className="animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                      <StockCard
+                        stock={stock}
+                        onClick={() => setSelectedStock(stock)}
+                      />
+                    </div>
                   ))}
                 </div>
               </section>
@@ -235,7 +236,7 @@ function AppContent() {
             <li><strong>DMH:</strong> During Market Hours</li>
           </ul>
         </div>
-        <p className="copyright">© {new Date().getFullYear()} Stock Earnings Tracker. Data provided by Finnhub.</p>
+        <p className="copyright">© {new Date().getFullYear()} Stock Earnings Tracker. Data provided by Financial Modeling Prep.</p>
       </footer>
     </div>
   );

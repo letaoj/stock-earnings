@@ -22,50 +22,25 @@ export class EarningsService {
       const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
       const response = await apiClient.get<any>(`/earnings-calendar?date=${dateStr}`);
 
-      // Finnhub returns { earningsCalendar: [...] }
-      const calendarData = response.earningsCalendar;
+      // FMP (via our proxy) returns direct array of earnings
+      const calendarData = Array.isArray(response) ? response : [];
 
-      // Guard clause for invalid data
-      if (!Array.isArray(calendarData)) {
-        console.warn('Expected earningsCalendar array from API but got:', response);
-        return [];
-      }
-
-      // Transform Finnhub API response to our EarningsCalendarEntry format
+      // Transform FMP API response to our EarningsCalendarEntry format
       return calendarData.map((item: any) => ({
         symbol: item.symbol,
-        companyName: item.symbol, // Finnhub calendar doesn't provide name
-        timing: this.parseEarningsTime(item.hour),
-        date: item.date || dateStr,
-        scheduledTime: item.hour,
-        epsEstimate: item.epsEstimate,
-        epsActual: item.epsActual,
-        revenueEstimate: item.revenueEstimate,
-        revenueActual: item.revenueActual,
+        companyName: item.symbol, // FMP calendar doesn't provide name in this endpoint
+        timing: item.time === 'bmo' ? 'BMO' : item.time === 'amc' ? 'AMC' : 'DMH',
+        date: item.date,
+        scheduledTime: undefined, // FMP doesn't provide exact time in this endpoint
+        epsEstimate: item.epsEstimated,
+        epsActual: item.eps,
+        revenueEstimate: item.revenueEstimated,
+        revenueActual: item.revenue,
       }));
     } catch (error) {
       console.error('Failed to fetch earnings calendar:', error);
-
-      const status = (error as any).status;
-      if (status === 429) {
-        throw new Error('API Rate Limit Reached. Please wait a moment and try again.');
-      } else if (status >= 500) {
-        throw new Error('Finnhub Service Error. Please try again later.');
-      }
-
       throw error;
     }
-  }
-
-  /**
-   * Parse earnings time from FMP API response
-   */
-  private parseEarningsTime(time: string): 'BMO' | 'AMC' | 'DMH' {
-    if (!time) return 'DMH';
-    const timeLower = time.toLowerCase();
-    if (timeLower.includes('bmo') || timeLower.includes('before')) return 'BMO';
-    if (timeLower.includes('amc') || timeLower.includes('after')) return 'AMC';
-    return 'DMH';
   }
 
   /**

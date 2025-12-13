@@ -13,9 +13,9 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.FINNHUB_API_KEY;
+  const apiKey = process.env.FMP_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'Finnhub API key not configured' });
+    return res.status(500).json({ error: 'FMP API key not configured' });
   }
 
   try {
@@ -26,51 +26,38 @@ export default async function handler(
     }
 
     const daysNum = parseInt(typeof days === 'string' ? days : '30');
-    // Finnhub uses Unix timestamps (in seconds)
-    const toDate = Math.floor(Date.now() / 1000);
-    const fromDate = toDate - (daysNum * 24 * 60 * 60);
+    // For FMP, we can use "timeseries" (limited) or "historical-price-full" (date range)
+    // FMP Free Tier has limited historical data. "30 days" is usually fine via 'historical-price-full'.
+    // Date range format: YYYY-MM-DD
+    const toDate = new Date();
+    const fromDate = new Date();
+    fromDate.setDate(toDate.getDate() - daysNum);
 
-    // Finnhub Stock Candles API
-    // https://finnhub.io/docs/api/stock-candles
-    const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${fromDate}&to=${toDate}&token=${apiKey}`;
+    const toStr = toDate.toISOString().split('T')[0];
+    const fromStr = fromDate.toISOString().split('T')[0];
+
+    // FMP Historical Price API
+    const url = `https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}?from=${fromStr}&to=${toStr}&apikey=${apiKey}`;
 
     const response = await fetch(url);
 
     if (!response.ok) {
+      // FMP returns 200 with empty body or error message in body usually, but 403 on limit
       if (response.status === 403) {
-        console.warn(`Finnhub 403 (Access Denied) for symbol: ${symbol}. Returning empty history.`);
         return res.status(403).json({ error: 'Access Denied' });
       }
-      const errorText = await response.text();
-      throw new Error(`Finnhub Candles API error: ${response.status} - ${errorText}`);
+      throw new Error(`FMP API error: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (data.s === 'no_data') {
-      return res.status(200).json({ historical: [] });
-    }
+    // FMP returns { symbol: "AAPL", historical: [ { date, open, high, low, close, volume... } ] }
+    // The 'historical' array is sorted Newest First by default.
+    // FMP returns Newest First. Frontend originally expected Oldest First.
+    // We reverse here to ensure charts render correctly left-to-right.
 
-    // Finnhub returns parallel arrays: c, h, l, o, t, v
-    // We need to zip them into an array of objects
-    const count = data.t ? data.t.length : 0;
-    const historical = [];
-
-    for (let i = 0; i < count; i++) {
-      const dateStr = new Date(data.t[i] * 1000).toISOString().split('T')[0];
-      historical.push({
-        date: dateStr,
-        close: data.c[i],
-        high: data.h[i],
-        low: data.l[i],
-        open: data.o[i],
-        volume: data.v[i]
-      });
-    }
-
-    // FMP returns Newest First. Finnhub returns Oldest First.
-    // We reverse here to match FMP behavior so the frontend service doesn't break.
-    historical.reverse();
+    const historical = data.historical || [];
+    historical.reverse(); // Now Oldest First
 
     // Set cache headers (5 minutes for historical data)
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');

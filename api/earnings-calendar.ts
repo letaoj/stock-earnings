@@ -13,9 +13,9 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.FINNHUB_API_KEY;
+  const apiKey = process.env.FMP_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'Finnhub API key not configured' });
+    return res.status(500).json({ error: 'FMP API key not configured' });
   }
 
   try {
@@ -25,46 +25,37 @@ export default async function handler(
       return res.status(400).json({ error: 'Date parameter required' });
     }
 
-    // Finnhub Earnings Calendar API
-    // https://finnhub.io/docs/api/earnings-calendar
-    const url = `https://finnhub.io/api/v1/calendar/earnings?from=${date}&to=${date}&token=${apiKey}`;
+    // FMP Earnings Calendar API
+    const url = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${date}&to=${date}&apikey=${apiKey}`;
 
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Finnhub API error: ${response.status}`);
+      throw new Error(`FMP API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json(); // FMP returns Array<EarningEntry>
 
     // Filter for US Stocks
-    // US Stocks typically have no suffix or .A/.B/etc for classes.
-    // International stocks have .DE, .L, .TO, etc.
-    if (data.earningsCalendar && Array.isArray(data.earningsCalendar)) {
-      data.earningsCalendar = data.earningsCalendar.filter((item: any) => {
-        const symbol = item.symbol;
-        if (!symbol) return false;
-        // Keep if no dot, OR if dot exists, the suffix is 1-2 chars (Class A/B) 
-        // and NOT a known country code like TO (Toronto), L (London), etc. 
-        // Easier rule for "Main" US market: No dot, or dot followed by single letter (BRK.A, BRK.B).
-        // Exceptions exist, but this clears out most international garbage (XXX.DE, XXX.SA).
-        const parts = symbol.split('.');
-        if (parts.length === 1) return true; // No dot -> AAPL
-        if (parts.length === 2 && parts[1].length <= 2 && !['TO', 'CN', 'DE', 'PA', 'L', 'HE'].includes(parts[1])) {
-          // Short suffix that isn't a common exchange code. 
-          // Finnhub raw data inspection would be ideal, but heuristic: 
-          // Most international are .XX. 
-          // Class shares are .A, .B.
-          return true;
-        }
-        return false;
-      });
-    }
+    // FMP symbols for US stocks are just "AAPL". International has suffixes like "AAPL.MX".
+    // We filter out any symbol containing a dot for simplicity and US-purity.
+    const usStocks = Array.isArray(data) ? data.filter((item: any) => {
+      const symbol = item.symbol;
+      return symbol && !symbol.includes('.'); // Strict main US market filter
+    }) : [];
 
-    // Set cache headers for better performance (1 hour)
+    // FMP returns: { date, symbol, eps, epsEstimated, time, revenue, revenueEstimated ... }
+    // We might need to map this in the frontend or here.
+    // Let's standardise the response structure slightly to match what our frontend expects (originally FMP-like).
+    // Actually, frontend was adapting Finnhub to FMP. So raw FMP is best.
+
+    // For compatibility with previous response structure, we return the raw array.
+    // The frontend service has been updated to handle Array response.
+
+    // Set cache headers
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
 
-    return res.status(200).json(data);
+    return res.status(200).json(usStocks);
   } catch (error) {
     console.error('Earnings calendar error:', error);
     return res.status(500).json({

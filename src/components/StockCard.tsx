@@ -55,7 +55,11 @@ export function StockCard({ stock, onClick }: StockCardProps) {
   };
 
   return (
-    <div className={`stock-card ${onClick ? 'clickable' : ''}`} onClick={onClick}>
+    <div
+      className={`stock-card ${onClick ? 'clickable' : ''}`}
+      onClick={onClick}
+      style={{ '--glow-color': isPositive ? 'rgba(74, 222, 128, 0.15)' : 'rgba(248, 113, 113, 0.15)' } as React.CSSProperties}
+    >
       <div className="stock-card-header">
         <div className="stock-info">
           <div className="stock-symbol">{stock.symbol}</div>

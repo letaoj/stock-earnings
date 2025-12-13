@@ -1,55 +1,102 @@
 .stock-card {
-  background: white;
-  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glow Effect */
+.stock-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(circle at 50% 0%, var(--glow-color, rgba(255, 255, 255, 0.05)), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.stock-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+
+.stock-card:hover::before {
+  opacity: 0.4;
 }
 
 .stock-card.clickable {
   cursor: pointer;
 }
 
-.stock-card.clickable:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+/* Content wrapper to stay above glow */
+.stock-card>* {
+  position: relative;
+  z-index: 1;
 }
 
 .stock-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .stock-info .stock-symbol {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-primary);
+  line-height: 1;
   margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
 }
 
 .stock-info .company-name {
-  font-size: 0.875rem;
-  color: #6b7280;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.stock-industry {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(4px);
 }
 
 .status-badge.released {
-  background: #d1fae5;
-  color: #065f46;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.2);
 }
 
 .status-badge.pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.2);
 }
 
 .stock-card-body {
@@ -60,26 +107,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.current-price {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 1.5rem;
 }
 
 .price-label {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
 }
 
 .price-value {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
 .price-change {
@@ -90,144 +133,99 @@
 }
 
 .price-change.positive {
-  color: #10b981;
+  color: #4ade80;
 }
 
 .price-change.negative {
-  color: #ef4444;
+  color: #f87171;
 }
 
 .price-change .percent {
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.after-hours {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background: #f3f4f6;
-  border-radius: 6px;
-  font-size: 0.875rem;
-}
-
-.after-hours .label {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.after-hours .value {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.after-hours .change {
-  font-weight: 600;
-}
-
-.after-hours .change.positive {
-  color: #10b981;
-}
-
-.after-hours .change.negative {
-  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+  opacity: 0.8;
 }
 
 .chart-container {
-  margin: 1rem 0;
+  margin: 1.5rem -1.5rem;
+  height: 120px;
+  /* Fade out edges slightly for smooth look */
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
 
 .earnings-info {
-  margin-top: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .earnings-timing {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .earnings-timing .label {
-  color: #6b7280;
-  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .earnings-timing .value {
+  color: var(--text-primary);
   font-weight: 600;
-  color: #1f2937;
-  padding: 0.125rem 0.5rem;
-  background: #e5e7eb;
-  border-radius: 4px;
-}
-
-.earnings-timing .time {
-  color: #6b7280;
 }
 
 .estimates,
 .actuals {
-  margin-top: 0.75rem;
-  padding: 0.75rem;
-  background: #f9fafb;
-  border-radius: 6px;
+  display: grid;
+  gap: 0.5rem;
 }
 
 .estimate-row,
 .actual-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.estimate-row:last-child,
-.actual-row:last-child {
-  margin-bottom: 0;
+  font-size: 0.85rem;
 }
 
 .estimate-row .label,
 .actual-row .label {
-  color: #6b7280;
-  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .estimate-row .value,
 .actual-row .value {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.actual-row .estimate {
-  color: #6b7280;
-  font-size: 0.75rem;
-  margin-left: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .beat-status {
-  padding: 0.5rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 6px;
   text-align: center;
+  font-size: 0.75rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
 .beat-status.beat {
-  background: #d1fae5;
-  color: #065f46;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
 }
 
 .beat-status.miss {
-  background: #fee2e2;
-  color: #991b1b;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
 }
 
 .beat-status.meet {
-  background: #dbeafe;
-  color: #1e40af;
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
 }
 
 .stock-card-footer {
@@ -235,12 +233,38 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 
-.market-status {
-  text-transform: capitalize;
-  font-weight: 500;
+.after-hours {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.after-hours .label {
+  color: var(--text-secondary);
+}
+
+.after-hours .value {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0 auto 0 0.5rem;
+}
+
+.after-hours .change.positive {
+  color: #4ade80;
+}
+
+.after-hours .change.negative {
+  color: #f87171;
 }

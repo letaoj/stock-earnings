@@ -31,10 +31,10 @@ export class StockService {
     try {
       const data = await apiClient.get<any>(`/stock-history?symbol=${symbol}&days=${days}`);
 
-      // Finnhub (via our proxy) returns data in { historical: [...] } format
+      // FMP returns data in { historical: [...] } format
       const historical = data.historical || [];
 
-      // Transform Finnhub API response to our Stock format
+      // Transform FMP API response to our Stock format
       return historical.map((item: any) => ({
         date: item.date,
         close: item.close,
@@ -42,7 +42,7 @@ export class StockService {
         low: item.low,
         open: item.open,
         volume: item.volume,
-      })).reverse(); // FMP returns newest first, we want oldest first
+      })); // Backend now ensures Oldest -> Newest order
     } catch (error) {
       // Suppress logging for known 403 Access Denied (likely Free Tier limit)
       if ((error as any).status === 403 || (error as any).message?.includes('403')) {
