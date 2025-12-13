@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Stock, PriceData } from '../types/stock';
 import { StockChart } from './StockChart';
 import { stockService } from '../services/stockService';
+import { useSettings } from '../contexts/SettingsContext';
 import './StockModal.css';
 
 interface StockModalProps {
@@ -10,6 +11,7 @@ interface StockModalProps {
 }
 
 export function StockModal({ stock, onClose }: StockModalProps) {
+  const { timezone } = useSettings();
   const [priceHistory, setPriceHistory] = useState<PriceData[]>(stock.priceHistory || []);
   const [range, setRange] = useState<'30' | '90' | '365'>('30');
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -241,7 +243,7 @@ export function StockModal({ stock, onClose }: StockModalProps) {
               </div>
               <div className="detail-row">
                 <span>Last Updated:</span>
-                <span>{new Date(stock.lastUpdated).toLocaleString()}</span>
+                <span>{new Date(stock.lastUpdated).toLocaleString('en-US', { timeZone: timezone === 'local' ? undefined : timezone })}</span>
               </div>
             </div>
           </section>

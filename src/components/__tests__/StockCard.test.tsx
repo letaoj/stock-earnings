@@ -50,22 +50,32 @@ const mockReleasedStock: Stock = {
   },
 };
 
+import { SettingsProvider } from '../../contexts/SettingsContext';
+
 describe('StockCard', () => {
+  const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+      <SettingsProvider>
+        {ui}
+      </SettingsProvider>
+    );
+  };
+
   it('should render stock symbol and company name', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     expect(screen.getByText('AAPL')).toBeInTheDocument();
     expect(screen.getByText('Apple Inc.')).toBeInTheDocument();
   });
 
   it('should render current price', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     expect(screen.getByText(/\$185\.92/)).toBeInTheDocument();
   });
 
   it('should render price change with positive styling', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     const changeElement = screen.getByText(/\+1\.36%/);
     expect(changeElement).toBeInTheDocument();
@@ -77,7 +87,7 @@ describe('StockCard', () => {
       ...mockStock,
       price: { ...mockStock.price, change: -2.5, changePercent: -1.36 },
     };
-    render(<StockCard stock={negativeStock} />);
+    renderWithProviders(<StockCard stock={negativeStock} />);
 
     const changeElement = screen.getByText(/-1\.36%/);
     expect(changeElement).toBeInTheDocument();
@@ -85,33 +95,33 @@ describe('StockCard', () => {
   });
 
   it('should show pending status badge for unreleased earnings', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     expect(screen.getByText('Pending')).toBeInTheDocument();
   });
 
   it('should show released status badge for released earnings', () => {
-    render(<StockCard stock={mockReleasedStock} />);
+    renderWithProviders(<StockCard stock={mockReleasedStock} />);
 
     expect(screen.getByText('Released')).toBeInTheDocument();
   });
 
   it('should display earnings timing', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     expect(screen.getByText('AMC')).toBeInTheDocument();
     expect(screen.getByText('16:30')).toBeInTheDocument();
   });
 
   it('should show estimates for pending earnings', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     expect(screen.getByText(/Est\. EPS:/)).toBeInTheDocument();
     expect(screen.getByText('$1.54')).toBeInTheDocument();
   });
 
   it('should show actual results for released earnings', () => {
-    render(<StockCard stock={mockReleasedStock} />);
+    renderWithProviders(<StockCard stock={mockReleasedStock} />);
 
     expect(screen.getByText('Beat Estimates')).toBeInTheDocument();
     expect(screen.getByText('$1.62')).toBeInTheDocument();
@@ -129,7 +139,7 @@ describe('StockCard', () => {
         },
       },
     };
-    render(<StockCard stock={stockWithAfterHours} />);
+    renderWithProviders(<StockCard stock={stockWithAfterHours} />);
 
     expect(screen.getByText(/After Hours:/)).toBeInTheDocument();
     expect(screen.getByText('$187.50')).toBeInTheDocument();
@@ -139,7 +149,7 @@ describe('StockCard', () => {
     const user = userEvent.setup();
     const handleClick = vi.fn();
 
-    render(<StockCard stock={mockStock} onClick={handleClick} />);
+    renderWithProviders(<StockCard stock={mockStock} onClick={handleClick} />);
 
     const card = screen.getByText('AAPL').closest('.stock-card');
     await user.click(card!);
@@ -149,20 +159,20 @@ describe('StockCard', () => {
 
   it('should have clickable class when onClick is provided', () => {
     const handleClick = vi.fn();
-    render(<StockCard stock={mockStock} onClick={handleClick} />);
+    renderWithProviders(<StockCard stock={mockStock} onClick={handleClick} />);
 
     const card = screen.getByText('AAPL').closest('.stock-card');
     expect(card).toHaveClass('clickable');
   });
 
   it('should display market status', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     expect(screen.getByText('market hours')).toBeInTheDocument();
   });
 
   it('should format large revenue numbers correctly', () => {
-    render(<StockCard stock={mockStock} />);
+    renderWithProviders(<StockCard stock={mockStock} />);
 
     // Should show $89.50B
     expect(screen.getByText(/\$89\.50B/)).toBeInTheDocument();

@@ -10,11 +10,13 @@ import { StockCard } from './components/StockCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { CompactStockList } from './components/CompactStockList';
 import { StockModal } from './components/StockModal';
+import { SettingsModal } from './components/SettingsModal';
+import { SettingsProvider } from './contexts/SettingsContext';
 import { REFRESH_INTERVALS } from './config/api';
 import { fetchSP500List, isSP500 } from './config/sp500';
 import './App.css';
 
-function App() {
+function AppContent() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [filteredStocks, setFilteredStocks] = useState<Stock[]>([]);
@@ -22,6 +24,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sp500Set, setSp500Set] = useState<Set<string>>(new Set());
+  const [showSettings, setShowSettings] = useState(false);
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,7 +56,7 @@ function App() {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedDate]); // Add selectedDate dependency
+  }, [selectedDate]);
 
   // Initial fetch
   useEffect(() => {
@@ -141,8 +144,15 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Stock Earnings Tracker</h1>
-        <p className="subtitle">Track daily earnings reports and stock performance</p>
+        <div className="header-content">
+          <div>
+            <h1>Stock Earnings Tracker</h1>
+            <p className="subtitle">Track daily earnings reports and stock performance</p>
+          </div>
+          <button className="settings-btn" onClick={() => setShowSettings(true)} aria-label="Settings">
+            ⚙️ Settings
+          </button>
+        </div>
       </header>
 
       <main className="app-main">
@@ -212,7 +222,19 @@ function App() {
       {selectedStock && (
         <StockModal stock={selectedStock} onClose={() => setSelectedStock(null)} />
       )}
+
+      {showSettings && (
+        <SettingsModal onClose={() => setShowSettings(false)} />
+      )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <SettingsProvider>
+      <AppContent />
+    </SettingsProvider>
   );
 }
 

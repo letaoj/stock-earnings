@@ -23,7 +23,7 @@ describe('Controls', () => {
   it('should render filter and sort selects', () => {
     render(<Controls {...mockProps} />);
 
-    expect(screen.getByLabelText('Filter:')).toBeInTheDocument();
+    expect(screen.getByLabelText('Status:')).toBeInTheDocument();
     expect(screen.getByLabelText('Sort by:')).toBeInTheDocument();
   });
 
@@ -47,7 +47,7 @@ describe('Controls', () => {
     const user = userEvent.setup();
     render(<Controls {...mockProps} />);
 
-    const filterSelect = screen.getByLabelText('Filter:');
+    const filterSelect = screen.getByLabelText('Status:');
     await user.selectOptions(filterSelect, 'BMO');
 
     expect(mockProps.onFilterChange).toHaveBeenCalledWith('BMO');
@@ -80,8 +80,8 @@ describe('Controls', () => {
   it('should show all filter options', () => {
     render(<Controls {...mockProps} />);
 
-    const filterSelect = screen.getByLabelText('Filter:');
-    expect(filterSelect).toContainHTML('<option value="all">All Stocks</option>');
+    const filterSelect = screen.getByLabelText('Status:');
+    expect(filterSelect).toContainHTML('<option value="all">All Statuses</option>');
     expect(filterSelect).toContainHTML('<option value="BMO">Before Market Open</option>');
     expect(filterSelect).toContainHTML('<option value="AMC">After Market Close</option>');
     expect(filterSelect).toContainHTML('<option value="released">Released</option>');
@@ -108,7 +108,7 @@ describe('Controls', () => {
   it('should reflect current filter value', () => {
     render(<Controls {...mockProps} filterBy="BMO" />);
 
-    const filterSelect = screen.getByLabelText('Filter:') as HTMLSelectElement;
+    const filterSelect = screen.getByLabelText('Status:') as HTMLSelectElement;
     expect(filterSelect.value).toBe('BMO');
   });
 });

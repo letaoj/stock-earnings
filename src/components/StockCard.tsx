@@ -1,5 +1,6 @@
 import { Stock } from '../types/stock';
 import { StockChart } from './StockChart';
+import { useSettings } from '../contexts/SettingsContext';
 import './StockCard.css';
 
 interface StockCardProps {
@@ -8,6 +9,7 @@ interface StockCardProps {
 }
 
 export function StockCard({ stock, onClick }: StockCardProps) {
+  const { timezone } = useSettings();
   const isPositive = stock.price.change >= 0;
   const hasAfterHours = stock.price.afterHours !== undefined;
   const earningsReleased = stock.earnings.status === 'released';
@@ -155,7 +157,7 @@ export function StockCard({ stock, onClick }: StockCardProps) {
       <div className="stock-card-footer">
         <span className="market-status">{stock.marketStatus.replace('-', ' ')}</span>
         <span className="last-updated">
-          Updated: {new Date(stock.lastUpdated).toLocaleTimeString()}
+          Updated: {new Date(stock.lastUpdated).toLocaleTimeString('en-US', { timeZone: timezone === 'local' ? undefined : timezone })}
         </span>
       </div>
     </div>

@@ -37,8 +37,32 @@ export default async function handler(
 
     const data = await response.json();
 
-    // Set cache headers for better performance
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+    // Filter for US Stocks
+    // US Stocks typically have no suffix or .A/.B/etc for classes.
+    // International stocks have .DE, .L, .TO, etc.
+    if (data.earningsCalendar && Array.isArray(data.earningsCalendar)) {
+      data.earningsCalendar = data.earningsCalendar.filter((item: any) => {
+        const symbol = item.symbol;
+        if (!symbol) return false;
+        // Keep if no dot, OR if dot exists, the suffix is 1-2 chars (Class A/B) 
+        // and NOT a known country code like TO (Toronto), L (London), etc. 
+        // Easier rule for "Main" US market: No dot, or dot followed by single letter (BRK.A, BRK.B).
+        // Exceptions exist, but this clears out most international garbage (XXX.DE, XXX.SA).
+        const parts = symbol.split('.');
+        if (parts.length === 1) return true; // No dot -> AAPL
+        if (parts.length === 2 && parts[1].length <= 2 && !['TO', 'CN', 'DE', 'PA', 'L', 'HE'].includes(parts[1])) {
+          // Short suffix that isn't a common exchange code. 
+          // Finnhub raw data inspection would be ideal, but heuristic: 
+          // Most international are .XX. 
+          // Class shares are .A, .B.
+          return true;
+        }
+        return false;
+      });
+    }
+
+    // Set cache headers for better performance (1 hour)
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
 
     return res.status(200).json(data);
   } catch (error) {

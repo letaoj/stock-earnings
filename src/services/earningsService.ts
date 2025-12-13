@@ -45,6 +45,14 @@ export class EarningsService {
       }));
     } catch (error) {
       console.error('Failed to fetch earnings calendar:', error);
+
+      const status = (error as any).status;
+      if (status === 429) {
+        throw new Error('API Rate Limit Reached. Please wait a moment and try again.');
+      } else if (status >= 500) {
+        throw new Error('Finnhub Service Error. Please try again later.');
+      }
+
       throw error;
     }
   }
