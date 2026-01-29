@@ -4,9 +4,9 @@ A modern web application for tracking and displaying daily earnings reports from
 
 [![CI](https://github.com/USERNAME/stock-earnings/workflows/CI/badge.svg)](https://github.com/USERNAME/stock-earnings/actions)
 [![Deploy](https://github.com/USERNAME/stock-earnings/workflows/Deploy%20to%20Vercel/badge.svg)](https://github.com/USERNAME/stock-earnings/actions)
-![React](https://img.shields.io/badge/React-18.3-blue)
+![React](https://img.shields.io/badge/React-19.0-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
-![Tests](https://img.shields.io/badge/tests-83%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-84%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 > **Note:** Replace `USERNAME` in the badge URLs with your GitHub username.
@@ -47,11 +47,10 @@ A modern web application for tracking and displaying daily earnings reports from
 
 ## Tech Stack
 
-- **Frontend**: React 18.2 with TypeScript
-- **Build Tool**: Vite 5.0
-- **Charts**: Recharts 2.10
-- **HTTP Client**: Axios 1.6
-- **Date Utilities**: date-fns 3.0
+- **Frontend**: React 19.0 with TypeScript 5.7
+- **Build Tool**: Vite 7.2
+- **Charts**: Recharts 3.0
+- **Date Utilities**: date-fns 4.1
 - **Testing**: Vitest + React Testing Library
 - **Styling**: CSS with responsive design
 
@@ -205,9 +204,9 @@ To use a different financial API (Alpha Vantage, Polygon.io, etc.):
 
 The project includes comprehensive test coverage:
 
-- **83 Total Tests**
-  - 42 Service Tests (earningsService, stockService, mockData)
-  - 41 Component Tests (StockCard, DateSelector, SearchBar, Controls)
+- **84 Total Tests**
+  - Service Tests (earningsService, stockService, mockData)
+  - Component Tests (StockCard, DateSelector, SearchBar, Controls)
 
 ### Test Commands
 

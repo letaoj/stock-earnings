@@ -306,6 +306,30 @@ VITE_FINANCIAL_API_BASE_URL=https://api.production.com
 7. **Accessibility**: Test with keyboard and screen readers
 8. **Security**: Never commit API keys to Git
 
+## GitHub Actions
+
+The repository includes automated CI/CD workflows in `.github/workflows/`:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push/PR | Lint, type check, test, build |
+| `deploy.yml` | Push to main | Deploy to Vercel production |
+| `preview.yml` | PR | Deploy preview environment |
+| `codeql.yml` | Push/PR/Weekly | Security scanning |
+| `dependency-review.yml` | PR | Check vulnerable dependencies |
+
+### Required Secrets
+
+Set these in **Settings → Secrets and variables → Actions**:
+
+| Secret | Description |
+|--------|-------------|
+| `VERCEL_TOKEN` | From https://vercel.com/account/tokens |
+| `VERCEL_ORG_ID` | From `.vercel/project.json` after running `vercel link` |
+| `VERCEL_PROJECT_ID` | From `.vercel/project.json` after running `vercel link` |
+
+For detailed contributor guidelines, see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
 ## Resources
 
 - [React Documentation](https://react.dev)
@@ -313,3 +337,5 @@ VITE_FINANCIAL_API_BASE_URL=https://api.production.com
 - [Vitest Guide](https://vitest.dev)
 - [Recharts Documentation](https://recharts.org)
 - [Testing Library](https://testing-library.com)
+- [Vercel Documentation](https://vercel.com/docs)
+
