@@ -1,8 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { crawlEarningsCalendar, crawlNasdaqEarnings } from './services/crawler';
 
 /**
  * Vercel Serverless Function: Get Earnings Calendar
  * Proxies requests to Financial Modeling Prep API securely
+ * Falls back to web crawler if API fails or is not configured
  */
 export default async function handler(
   req: VercelRequest,
@@ -13,18 +15,26 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const { date, source = 'auto' } = req.query;
+
+  if (!date || typeof date !== 'string') {
+    return res.status(400).json({ error: 'Date parameter required' });
+  }
+
+  // Force crawler mode
+  if (source === 'crawler') {
+    return fetchFromCrawler(date, res);
+  }
+
   const apiKey = process.env.FMP_API_KEY;
+
+  // If no API key, use crawler
   if (!apiKey) {
-    return res.status(500).json({ error: 'FMP API key not configured' });
+    console.log('No FMP API key configured, using crawler');
+    return fetchFromCrawler(date, res);
   }
 
   try {
-    const { date } = req.query;
-
-    if (!date || typeof date !== 'string') {
-      return res.status(400).json({ error: 'Date parameter required' });
-    }
-
     // FMP Earnings Calendar API
     const url = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${date}&to=${date}&apikey=${apiKey}`;
 
@@ -34,33 +44,60 @@ export default async function handler(
       throw new Error(`FMP API error: ${response.status}`);
     }
 
-    const data = await response.json(); // FMP returns Array<EarningEntry>
+    const data = await response.json();
 
     // Filter for US Stocks
-    // FMP symbols for US stocks are just "AAPL". International has suffixes like "AAPL.MX".
-    // We filter out any symbol containing a dot for simplicity and US-purity.
     const usStocks = Array.isArray(data) ? data.filter((item: any) => {
       const symbol = item.symbol;
-      return symbol && !symbol.includes('.'); // Strict main US market filter
+      return symbol && !symbol.includes('.');
     }) : [];
 
-    // FMP returns: { date, symbol, eps, epsEstimated, time, revenue, revenueEstimated ... }
-    // We might need to map this in the frontend or here.
-    // Let's standardise the response structure slightly to match what our frontend expects (originally FMP-like).
-    // Actually, frontend was adapting Finnhub to FMP. So raw FMP is best.
-
-    // For compatibility with previous response structure, we return the raw array.
-    // The frontend service has been updated to handle Array response.
-
-    // Set cache headers
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
+    res.setHeader('X-Source', 'fmp');
 
     return res.status(200).json(usStocks);
   } catch (error) {
-    console.error('Earnings calendar error:', error);
+    console.error('FMP earnings calendar error, falling back to crawler:', error);
+
+    // Fallback to crawler
+    return fetchFromCrawler(date, res);
+  }
+}
+
+async function fetchFromCrawler(date: string, res: VercelResponse) {
+  try {
+    let entries;
+
+    try {
+      entries = await crawlEarningsCalendar(date);
+    } catch (yahooError) {
+      console.warn('Yahoo Finance crawl failed, trying Nasdaq:', yahooError);
+      entries = await crawlNasdaqEarnings(date);
+    }
+
+    // Filter for US stocks
+    const usStocks = entries.filter(e => !e.symbol.includes('.'));
+
+    // Transform to FMP-like format
+    const result = usStocks.map(entry => ({
+      date: entry.date,
+      symbol: entry.symbol,
+      eps: entry.epsActual,
+      epsEstimated: entry.epsEstimate,
+      time: entry.time,
+      revenue: undefined,
+      revenueEstimated: undefined,
+    }));
+
+    res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate');
+    res.setHeader('X-Source', 'crawler');
+
+    return res.status(200).json(result);
+  } catch (crawlerError) {
+    console.error('Crawler also failed:', crawlerError);
     return res.status(500).json({
-      error: 'Failed to fetch earnings calendar',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Failed to fetch earnings calendar from all sources',
+      message: crawlerError instanceof Error ? crawlerError.message : 'Unknown error'
     });
   }
 }

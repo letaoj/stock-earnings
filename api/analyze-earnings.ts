@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { generateEarningsAnalysis, AnalysisResult } from './services/gemini';
+import { generateEarningsAnalysis } from './services/gemini';
 import { findEarningsReportUrl } from './services/search';
 
 // Simple HTML tag stripper for now, or use cheerio if installed
@@ -40,7 +40,7 @@ export default async function handler(
     try {
         // 1. Find URL
         console.log(`Searching for report: ${symbol} ${quarter}`);
-        let reportUrl = await findEarningsReportUrl(symbol, quarter);
+        const reportUrl = await findEarningsReportUrl(symbol, quarter);
 
         if (!reportUrl) {
             // Fallback logic or error

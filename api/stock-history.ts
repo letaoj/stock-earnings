@@ -1,8 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { crawlStockHistory } from './services/crawler';
 
 /**
  * Vercel Serverless Function: Get Stock Price History
  * Proxies requests to Financial Modeling Prep API securely
+ * Falls back to web crawler if API fails or is not configured
  */
 export default async function handler(
   req: VercelRequest,
@@ -13,21 +15,28 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const { symbol, days = '30', source = 'auto' } = req.query;
+
+  if (!symbol || typeof symbol !== 'string') {
+    return res.status(400).json({ error: 'Symbol parameter required' });
+  }
+
+  const daysNum = parseInt(typeof days === 'string' ? days : '30');
+
+  // Force crawler mode
+  if (source === 'crawler') {
+    return fetchFromCrawler(symbol, daysNum, res);
+  }
+
   const apiKey = process.env.FMP_API_KEY;
+
+  // If no API key, use crawler
   if (!apiKey) {
-    return res.status(500).json({ error: 'FMP API key not configured' });
+    console.log('No FMP API key configured, using crawler');
+    return fetchFromCrawler(symbol, daysNum, res);
   }
 
   try {
-    const { symbol, days = '30' } = req.query;
-
-    if (!symbol || typeof symbol !== 'string') {
-      return res.status(400).json({ error: 'Symbol parameter required' });
-    }
-
-    const daysNum = parseInt(typeof days === 'string' ? days : '30');
-    // For FMP, we can use "timeseries" (limited) or "historical-price-full" (date range)
-    // FMP Free Tier has limited historical data. "30 days" is usually fine via 'historical-price-full'.
     // Date range format: YYYY-MM-DD
     const toDate = new Date();
     const fromDate = new Date();
@@ -42,9 +51,10 @@ export default async function handler(
     const response = await fetch(url);
 
     if (!response.ok) {
-      // FMP returns 200 with empty body or error message in body usually, but 403 on limit
+      // FMP returns 403 on limit
       if (response.status === 403) {
-        return res.status(403).json({ error: 'Access Denied' });
+        console.log('FMP API rate limited, falling back to crawler');
+        return fetchFromCrawler(symbol, daysNum, res);
       }
       throw new Error(`FMP API error: ${response.status}`);
     }
@@ -52,23 +62,51 @@ export default async function handler(
     const data = await response.json();
 
     // FMP returns { symbol: "AAPL", historical: [ { date, open, high, low, close, volume... } ] }
-    // The 'historical' array is sorted Newest First by default.
-    // FMP returns Newest First. Frontend originally expected Oldest First.
-    // We reverse here to ensure charts render correctly left-to-right.
-
     const historical = data.historical || [];
-    historical.reverse(); // Now Oldest First
+    historical.reverse(); // Oldest First for charts
 
-    // Set cache headers (5 minutes for historical data)
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+    res.setHeader('X-Source', 'fmp');
 
-    // Return in the structure expected by stockService ( { historical: [...] } )
     return res.status(200).json({ historical });
   } catch (error) {
-    console.error('Stock history error:', error);
+    console.error('FMP stock history error, falling back to crawler:', error);
+
+    // Fallback to crawler
+    return fetchFromCrawler(symbol, daysNum, res);
+  }
+}
+
+async function fetchFromCrawler(symbol: string, days: number, res: VercelResponse) {
+  try {
+    const prices = await crawlStockHistory(symbol, days);
+
+    // Transform to FMP-like format
+    const historical = prices.map(p => ({
+      date: p.date,
+      open: p.open,
+      high: p.high,
+      low: p.low,
+      close: p.close,
+      adjClose: p.adjClose || p.close,
+      volume: p.volume,
+      unadjustedVolume: p.volume,
+      change: 0,
+      changePercent: 0,
+      vwap: (p.high + p.low + p.close) / 3,
+      label: p.date,
+      changeOverTime: 0,
+    }));
+
+    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
+    res.setHeader('X-Source', 'crawler');
+
+    return res.status(200).json({ historical });
+  } catch (crawlerError) {
+    console.error('Crawler also failed:', crawlerError);
     return res.status(500).json({
-      error: 'Failed to fetch stock history',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Failed to fetch stock history from all sources',
+      message: crawlerError instanceof Error ? crawlerError.message : 'Unknown error'
     });
   }
 }
