@@ -1,44 +1,57 @@
 .controls {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  background: white;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  gap: 1.25rem;
   flex-wrap: wrap;
 }
 
 .control-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
 .control-group label {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .control-select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 0.5rem 2rem 0.5rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   font-size: 0.875rem;
-  color: #1f2937;
-  background: white;
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
 }
 
 .control-select:hover {
-  border-color: #9ca3af;
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(30, 41, 59, 0.8);
 }
 
 .control-select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+}
+
+.control-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 0.5rem;
 }
 
 .refresh-btn {
@@ -46,29 +59,37 @@
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
-  background: #667eea;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: var(--font-main);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.25);
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background: #5568d3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.35);
+}
+
+.refresh-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .refresh-btn:disabled {
-  background: #d1d5db;
+  background: rgba(148, 163, 184, 0.3);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .refresh-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .refresh-btn.refreshing .refresh-icon {
@@ -76,27 +97,25 @@
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
   .controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
   }
 
   .control-group {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .control-select {
-    width: 100%;
+    flex: 1;
+    max-width: 200px;
   }
 
   .refresh-btn {
